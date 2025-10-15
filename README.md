@@ -64,7 +64,7 @@ JWT_SECRET=change_me
 ### 3) Exemple `docker-compose.yml` minimal
 > Placez-le dans `docker/docker-compose.yml` ou à la racine selon votre préférence.
 
-```yaml
+yaml
 services:
   backend:
     build: ./backend
