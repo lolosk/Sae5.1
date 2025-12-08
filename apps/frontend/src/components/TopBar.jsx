@@ -14,19 +14,12 @@ export default function TopBar() {
 
       {/* Navigation */}
       <div className="nav">
-        <NavLink
-          to="/library"
-          className={({ isActive }) => `tab ${isActive ? "active" : ""}`}
-        >
-          Library
-        </NavLink>
-        <NavLink
-          to="/photos"
-          className={({ isActive }) => `tab ${isActive ? "active" : ""}`}
-        >
-          Photos
-        </NavLink>
+        <NavLink to="/library" className={({isActive})=>`tab ${isActive?'active':''}`}>Library</NavLink>
+        <NavLink to="/photos"  className={({isActive})=>`tab ${isActive?'active':''}`}>Photos</NavLink>
+        <NavLink to="/login"   className={({isActive})=>`tab ${isActive?'active':''}`}>Login</NavLink>
       </div>
+
+
     </div>
   );
 }
