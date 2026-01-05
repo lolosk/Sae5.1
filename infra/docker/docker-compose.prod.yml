@@ -1,0 +1,17 @@
+version: "3.8"
+services:
+  mediadock:
+    image: mediadock:latest     # (ou ghcr.io/lolosk/sae5.1:latest si tu pushes)
+    build: ../..                # retire "build" si tu déploies une image déjà buildée
+    ports:
+      - "8080:3000"
+    environment:
+      - PORT=3000
+      - MOVIES_DIR=/media/movies
+      - SERIES_DIR=/media/series
+      - PHOTOS_DIR=/media/photos
+    volumes:
+      - /srv/media/movies:/media/movies:ro
+      - /srv/media/series:/media/series:ro
+      - /srv/media/photos:/media/photos:ro
+    restart: unless-stopped
