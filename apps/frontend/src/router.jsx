@@ -5,6 +5,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register.jsx";
 import Library from "./pages/Library";
 import Photos from "./pages/Photos";
+import Local from "./pages/Local";
 
 export const router = createBrowserRouter([
   { path: "/", element: <App/>, children: [
@@ -12,6 +13,7 @@ export const router = createBrowserRouter([
       { path: "login", element: <Login/> },        // +++
       { path: "register", element: <Register/> },  // +++
       { path: "library", element: <Library/> },
+      { path: "local", element: <Local/> },
       { path: "photos", element: <Photos/> },
   ] }
 ]);
