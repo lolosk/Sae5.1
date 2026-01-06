@@ -1,7 +1,9 @@
-const API = import.meta.env.VITE_API_URL || "http://localhost:8080/api";
+const API = import.meta.env.VITE_API_URL || "";
+const API_BASE = ""; // important: same origin in Docker
+
 
 export async function apiRegister({ email, password, name }) {
-  const res = await fetch(`${API}/auth/register`, {
+  const res = await fetch(`${API_BASE}/auth/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -11,7 +13,7 @@ export async function apiRegister({ email, password, name }) {
 }
 
 export async function apiLogin({ email, password }) {
-  const res = await fetch(`${API}/auth/login`, {
+  const res = await fetch(`${API_BASE}/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -21,6 +23,6 @@ export async function apiLogin({ email, password }) {
 }
 
 export async function apiMe() {
-  const res = await fetch(`${API}/auth/me`, { credentials: "include" });
+  const res = await fetch(`${API_BASE}/auth/me`, { credentials: "include" });
   return res.json();
 }
