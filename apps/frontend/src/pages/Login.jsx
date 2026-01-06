@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { apiLogin, apiRegister } from "apps/frontend/src/api.js";
+import { apiLogin, apiRegister } from "../lib/api";
+
 
 
 export default function Login(){
