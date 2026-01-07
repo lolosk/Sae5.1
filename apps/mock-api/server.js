@@ -6,7 +6,7 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 
-// (Optionnel) si tu passes par le proxy Vite, tu peux carrément retirer cors.
+// en docker / LAN / WAN : accepte l'origine du navigateur
 app.use(cors({ origin: true, credentials: true }));
 
 const users = new Map();
@@ -24,9 +24,17 @@ app.post("/api/auth/register", (req, res) => {
 app.post("/api/auth/login", (req, res) => {
   const { email, password } = req.body || {};
   const u = users.get(email);
-  if (!u || u.password !== password) return res.status(401).json({ ok: false, error: "invalid_credentials" });
+  if (!u || u.password !== password) {
+    return res.status(401).json({ ok: false, error: "invalid_credentials" });
+  }
 
-  res.cookie("sid", String(u.id), { httpOnly: true, sameSite: "lax", secure: false, path: "/" });
+  res.cookie("sid", String(u.id), {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: false, // tant que tu es en HTTP
+    path: "/",
+  });
+
   res.json({ ok: true, data: { userId: u.id } });
 });
 
@@ -38,4 +46,4 @@ app.get("/api/auth/me", (req, res) => {
 });
 
 const PORT = Number(process.env.PORT || 8080);
-app.listen(PORT, "0.0.0.0", () => console.log(`✅ Mock API on :${PORT}`));
+app.listen(PORT, "0.0.0.0", () => console.log(`✅ Mock API on http://0.0.0.0:${PORT}`));
