@@ -35,3 +35,6 @@ app.get("/api/auth/me", (req, res) => {
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, "0.0.0.0", () => console.log(`✅ API on :${PORT}`));
 
+res.cookie("sid", String(u.id), { httpOnly: true, sameSite: "lax", secure: false, path: "/" });
+
+
