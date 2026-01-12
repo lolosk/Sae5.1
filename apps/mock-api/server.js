@@ -6,10 +6,10 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 
-// en docker / LAN / WAN : accepte l'origine du navigateur
+// DEV: accepte toutes origines (simple, ça évite les galères LAN/WAN)
 app.use(cors({ origin: true, credentials: true }));
 
-const users = new Map();
+const users = new Map(); // email -> user
 let autoId = 1;
 
 app.post("/api/auth/register", (req, res) => {
