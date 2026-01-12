@@ -1,0 +1,11 @@
+{
+  "users": [
+    {
+      "id": "10079f76-c919-4642-b830-5f945f27907f",
+      "email": "admin",
+      "name": "admin",
+      "passwordHash": "$2a$10$oA8QumPyJwrKrFvGLL1L4ujBG9SREIJxRSwlMY50EI5./hw9RciQS",
+      "createdAt": "2026-01-12T10:43:47.051Z"
+    }
+  ]
+}

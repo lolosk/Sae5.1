@@ -1,0 +1,9 @@
+.git
+.github
+.idea
+**/node_modules
+**/.data
+**/data
+**/dist
+**/.env
+**/.DS_Store
