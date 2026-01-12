@@ -40,13 +40,51 @@ async function walk(rootDir, allowedExt) {
 let cache = { videos: [], photos: [], lastScan: null };
 
 async function scan() {
-  const [videos, photos] = await Promise.all([
-    walk(MEDIA_VIDEOS, VIDEO_EXT),
-    walk(MEDIA_PHOTOS, PHOTO_EXT)
-  ]);
-  cache = { videos, photos, lastScan: new Date().toISOString() };
+  const videos = await walk(MEDIA_VIDEOS, VIDEO_EXT);
+  const photos = await walk(MEDIA_PHOTOS, PHOTO_EXT);
+  cache = {
+    videos,
+    photos,
+    videoTree: toTree(videos),
+    photoTree: toTree(photos),
+    lastScan: new Date().toISOString()
+  };
+
   return cache;
 }
+
+function toTree(items) {
+  const root = { type: "dir", name: "", path: "", children: {} };
+
+  for (const it of items) {
+    const parts = it.path.split("/").filter(Boolean);
+    let node = root;
+
+    for (let i = 0; i < parts.length; i++) {
+      const part = parts[i];
+      const isFile = i === parts.length - 1;
+
+      if (isFile) {
+        node.children[part] = { type: "file", name: part, path: it.path, meta: it };
+      } else {
+        node.children[part] ||= { type: "dir", name: part, path: parts.slice(0, i + 1).join("/"), children: {} };
+        node = node.children[part];
+      }
+    }
+  }
+
+  // Convert children map -> sorted array
+  function normalize(dir) {
+    const arr = Object.values(dir.children);
+    arr.sort((a, b) => (a.type === b.type ? a.name.localeCompare(b.name) : a.type === "dir" ? -1 : 1));
+    dir.children = arr;
+    for (const c of arr) if (c.type === "dir") normalize(c);
+  }
+
+  normalize(root);
+  return root;
+}
+
 
 function getCache() {
   return cache;
