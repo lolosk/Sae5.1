@@ -21,8 +21,9 @@ async function walk(rootDir, allowedExt) {
 
     for (const e of entries) {
       const abs = path.join(dir, e.name);
-      if (e.isDirectory()) await rec(abs);
-      else if (e.isFile()) {
+      if (e.isDirectory()) {
+        await rec(abs);
+      } else if (e.isFile()) {
         const ext = path.extname(e.name).toLowerCase();
         if (!allowedExt.has(ext)) continue;
         const st = await fsp.stat(abs);
@@ -37,23 +38,8 @@ async function walk(rootDir, allowedExt) {
   return out;
 }
 
-let cache = { videos: [], photos: [], lastScan: null };
-
-async function scan() {
-  const videos = await walk(MEDIA_VIDEOS, VIDEO_EXT);
-  const photos = await walk(MEDIA_PHOTOS, PHOTO_EXT);
-  cache = {
-    videos,
-    photos,
-    videoTree: toTree(videos),
-    photoTree: toTree(photos),
-    lastScan: new Date().toISOString()
-  };
-
-  return cache;
-}
-
 function toTree(items) {
+  // root virtual
   const root = { type: "dir", name: "", path: "", children: {} };
 
   for (const it of items) {
@@ -67,16 +53,24 @@ function toTree(items) {
       if (isFile) {
         node.children[part] = { type: "file", name: part, path: it.path, meta: it };
       } else {
-        node.children[part] ||= { type: "dir", name: part, path: parts.slice(0, i + 1).join("/"), children: {} };
+        node.children[part] ||= {
+          type: "dir",
+          name: part,
+          path: parts.slice(0, i + 1).join("/"),
+          children: {}
+        };
         node = node.children[part];
       }
     }
   }
 
-  // Convert children map -> sorted array
   function normalize(dir) {
     const arr = Object.values(dir.children);
-    arr.sort((a, b) => (a.type === b.type ? a.name.localeCompare(b.name) : a.type === "dir" ? -1 : 1));
+    // dirs first, then files, alpha
+    arr.sort((a, b) => {
+      if (a.type !== b.type) return a.type === "dir" ? -1 : 1;
+      return a.name.localeCompare(b.name);
+    });
     dir.children = arr;
     for (const c of arr) if (c.type === "dir") normalize(c);
   }
@@ -85,6 +79,30 @@ function toTree(items) {
   return root;
 }
 
+let cache = {
+  videos: [],
+  photos: [],
+  videoTree: { type: "dir", name: "", path: "", children: [] },
+  photoTree: { type: "dir", name: "", path: "", children: [] },
+  lastScan: null
+};
+
+async function scan() {
+  const [videos, photos] = await Promise.all([
+    walk(MEDIA_VIDEOS, VIDEO_EXT),
+    walk(MEDIA_PHOTOS, PHOTO_EXT)
+  ]);
+
+  cache = {
+    videos,
+    photos,
+    videoTree: toTree(videos),
+    photoTree: toTree(photos),
+    lastScan: new Date().toISOString()
+  };
+
+  return cache;
+}
 
 function getCache() {
   return cache;
