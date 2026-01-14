@@ -5,7 +5,7 @@ const MEDIA_VIDEOS = process.env.MEDIA_VIDEOS || "/media/videos";
 const MEDIA_PHOTOS = process.env.MEDIA_PHOTOS || "/media/photos";
 
 const VIDEO_EXT = new Set([".mp4", ".mkv", ".webm", ".mov", ".m4v", ".avi"]);
-const PHOTO_EXT = new Set([".jpg", ".jpeg", ".png", ".webp", ".gif"]);
+const PHOTO_EXT = new Set([".jpg", ".jpeg", ".png", ".webp", ".gif", ".pdf"]);
 
 async function walk(rootDir, allowedExt) {
   const root = path.resolve(rootDir);
@@ -26,9 +26,19 @@ async function walk(rootDir, allowedExt) {
       } else if (e.isFile()) {
         const ext = path.extname(e.name).toLowerCase();
         if (!allowedExt.has(ext)) continue;
+
         const st = await fsp.stat(abs);
         const rel = path.relative(root, abs).split(path.sep).join("/");
-        out.push({ name: e.name, path: rel, size: st.size, mtime: st.mtimeMs });
+
+        out.push({
+          name: e.name,
+          path: rel,
+          ext,
+          kind: ext === ".pdf" ? "pdf" : "image",
+          size: st.size,
+          mtime: st.mtimeMs
+        });
+
       }
     }
   }

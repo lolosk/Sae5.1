@@ -7,6 +7,9 @@ const { scan, getCache } = require("./library");
 const { handleStream } = require("./stream");
 const { handleImage } = require("./image");
 
+const { handleDoc } = require("./doc");
+
+
 const app = express();
 app.use(express.json({ limit: "2mb" }));
 app.use(cookieParser());
@@ -17,6 +20,8 @@ app.use("/api/auth", authRouter);
 app.get("/api/library", requireAuth, (req, res) => {
   res.json({ ok: true, data: getCache() });
 });
+
+app.get("/doc", requireAuth, handleDoc);
 
 app.post("/api/scan", requireAuth, async (req, res) => {
   try {

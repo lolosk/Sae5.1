@@ -38,6 +38,15 @@ export default function Home() {
   const [videoDir, setVideoDir] = useState("");
   const [photoDir, setPhotoDir] = useState("");
 
+  //pdf
+  const [pdfIndex, setPdfIndex] = useState(-1);
+
+  function isPdf(file) {
+    return (file.kind === "pdf") || (file.ext === ".pdf") || (file.name || "").toLowerCase().endsWith(".pdf") || (file.path || "").toLowerCase().endsWith(".pdf");
+  }
+
+
+
   const [expandedVideos, setExpandedVideos] = useState(new Set([""]));
   const [expandedPhotos, setExpandedPhotos] = useState(new Set([""]));
 
@@ -82,10 +91,24 @@ export default function Home() {
   const videoFiles = useMemo(() => listFilesInDir(lib.videoTree, videoDir), [lib.videoTree, videoDir]);
   const photoFiles = useMemo(() => listFilesInDir(lib.photoTree, photoDir), [lib.photoTree, photoDir]);
 
+
+
+  const imageFiles = useMemo(
+    () => photoFiles.filter((f) => !isPdf(f)),
+    [photoFiles]
+  );
+  const pdfFiles = useMemo(
+    () => photoFiles.filter((f) => isPdf(f)),
+    [photoFiles]
+  );
+
+
   // si on change de dossier photos, on ferme la modale
   useEffect(() => {
     setPhotoIndex(-1);
+    setPdfIndex(-1);
   }, [photoDir]);
+
 
   if (!me) {
     return (
@@ -235,29 +258,54 @@ export default function Home() {
                 <div
                   key={p.path}
                   style={{ border: "1px solid #eee", borderRadius: 8, overflow: "hidden", cursor: "pointer" }}
-                  onClick={() => setPhotoIndex(idx)}
-                  title="Clique pour agrandir"
+                  onClick={() => {
+                    if (isPdf(p)) {
+                      const i = pdfFiles.findIndex((x) => x.path === p.path);
+                      setPdfIndex(i);
+                    } else {
+                      const i = imageFiles.findIndex((x) => x.path === p.path);
+                      setPhotoIndex(i);
+                    }
+                  }}
+                  title="Clique pour ouvrir"
+
                 >
-                  <img
-                    alt={p.name}
-                    style={{ width: "100%", height: 160, objectFit: "cover", display: "block" }}
-                    src={`/image?path=${encodeURIComponent(p.path)}`}
-                    loading="lazy"
-                  />
+                  {isPdf(p) ? (
+                    <div style={{ height: 160, display: "flex", alignItems: "center", justifyContent: "center", background: "#f3f4f6", fontWeight: 800 }}>
+                      PDF
+                    </div>
+                  ) : (
+                    <img
+                      alt={p.name}
+                      style={{ width: "100%", height: 160, objectFit: "cover", display: "block" }}
+                      src={`/image?path=${encodeURIComponent(p.path)}`}
+                      loading="lazy"
+                    />
+                  )}
+
+
                   <div style={{ fontSize: 12, padding: 6, color: "#555" }}>{p.name}</div>
                 </div>
               ))}
+
             </div>
 
             {photoIndex >= 0 && (
               <PhotoModal
-                files={photoFiles}
+                files={imageFiles}
                 index={photoIndex}
                 onClose={() => setPhotoIndex(-1)}
                 onPrev={() => setPhotoIndex((i) => (i > 0 ? i - 1 : i))}
-                onNext={() => setPhotoIndex((i) => (i < photoFiles.length - 1 ? i + 1 : i))}
+                onNext={() => setPhotoIndex((i) => (i < imageFiles.length - 1 ? i + 1 : i))}
               />
             )}
+
+
+            {pdfIndex >= 0 && (
+              <PdfModal file={pdfFiles[pdfIndex]} onClose={() => setPdfIndex(-1)} />
+            )}
+
+
           </div>
         </div>
       )}
@@ -357,3 +405,80 @@ function PhotoModal({ files, index, onClose, onPrev, onNext }) {
     </div>
   );
 }
+
+function PdfModal({ file, onClose }) {
+  React.useEffect(() => {
+    function onKey(e) {
+      if (e.key === "Escape") onClose();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  if (!file) return null;
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(0,0,0,0.75)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 20,
+        zIndex: 9999
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          background: "#111",
+          borderRadius: 12,
+          maxWidth: "96vw",
+          maxHeight: "92vh",
+          width: "min(1100px, 96vw)",
+          overflow: "hidden",
+          border: "1px solid rgba(255,255,255,0.12)"
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 10,
+            padding: "10px 12px",
+            color: "white",
+            background: "rgba(0,0,0,0.35)"
+          }}
+        >
+          <div
+            style={{
+              fontSize: 13,
+              opacity: 0.9,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap"
+            }}
+            title={file.path}
+          >
+            {file.path}
+          </div>
+
+          <button onClick={onClose}>✕</button>
+        </div>
+
+        <div style={{ height: "78vh", background: "#000" }}>
+          <iframe
+            title={file.name}
+            src={`/doc?path=${encodeURIComponent(file.path)}`}
+            style={{ width: "100%", height: "100%", border: 0 }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
