@@ -5,7 +5,7 @@ const MEDIA_VIDEOS = process.env.MEDIA_VIDEOS || "/media/videos";
 const MEDIA_PHOTOS = process.env.MEDIA_PHOTOS || "/media/photos";
 
 const VIDEO_EXT = new Set([".mp4", ".mkv", ".webm", ".mov", ".m4v", ".avi"]);
-const PHOTO_EXT = new Set([".jpg", ".jpeg", ".png", ".webp", ".gif"]);
+const PHOTO_EXT = new Set([".jpg", ".jpeg", ".png", ".webp", ".gif", ".pdf"]);
 
 async function walk(rootDir, allowedExt) {
   const root = path.resolve(rootDir);
