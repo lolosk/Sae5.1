@@ -1,39 +1,42 @@
-export async function apiRegister(payload) {
-  const r = await fetch("/api/auth/register", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+async function fetchJson(url, opts = {}) {
+  const r = await fetch(url, {
     credentials: "include",
-    body: JSON.stringify(payload)
+    headers: { "Content-Type": "application/json", ...(opts.headers || {}) },
+    ...opts
   });
-  return r.json();
+
+  const data = await r.json().catch(() => null);
+
+  if (!r.ok) {
+    const err = new Error(data?.error || `HTTP_${r.status}`);
+    err.status = r.status;
+    err.data = data;
+    throw err;
+  }
+
+  return data;
 }
 
-export async function apiLogin(payload) {
-  const r = await fetch("/api/auth/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify(payload)
-  });
-  return r.json();
+export function apiRegister(payload) {
+  return fetchJson("/api/auth/register", { method: "POST", body: JSON.stringify(payload) });
 }
 
-export async function apiMe() {
-  const r = await fetch("/api/auth/me", { credentials: "include" });
-  return r.json();
+export function apiLogin(payload) {
+  return fetchJson("/api/auth/login", { method: "POST", body: JSON.stringify(payload) });
 }
 
-export async function apiLogout() {
-  const r = await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
-  return r.json();
+export function apiMe() {
+  return fetchJson("/api/auth/me");
 }
 
-export async function apiLibrary() {
-  const r = await fetch("/api/library", { credentials: "include" });
-  return r.json();
+export function apiLogout() {
+  return fetchJson("/api/auth/logout", { method: "POST" });
 }
 
-export async function apiScan() {
-  const r = await fetch("/api/scan", { method: "POST", credentials: "include" });
-  return r.json();
+export function apiLibrary() {
+  return fetchJson("/api/library");
+}
+
+export function apiScan() {
+  return fetchJson("/api/scan", { method: "POST" });
 }

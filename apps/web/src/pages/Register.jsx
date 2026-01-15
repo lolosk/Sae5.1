@@ -18,15 +18,39 @@ export default function Register() {
   }
 
   return (
-    <div>
-      <h2>Inscription</h2>
-      <form onSubmit={onSubmit} style={{ display: "grid", gap: 10, maxWidth: 420 }}>
-        <input placeholder="Nom (optionnel)" value={name} onChange={(e) => setName(e.target.value)} />
-        <input placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-        <input placeholder="Mot de passe" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
-        <button>Créer le compte</button>
-        {msg && <div style={{ color: "crimson" }}>{msg}</div>}
-      </form>
+    <div className="card formCard">
+      <div className="cardHeader">
+        <div className="cardTitle">Inscription</div>
+      </div>
+
+      <div className="cardBody">
+        {msg && <div className="empty" style={{ marginBottom: 12 }}>Erreur : {msg}</div>}
+
+        <form onSubmit={onSubmit} style={{ display: "grid", gap: 10 }}>
+          <div>
+            <label>Nom (optionnel)</label>
+            <input className="input" placeholder="Nom (optionnel)" value={name} onChange={(e) => setName(e.target.value)} />
+          </div>
+
+          <div>
+            <label>Email</label>
+            <input className="input" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          </div>
+
+          <div>
+            <label>Mot de passe</label>
+            <input
+              className="input"
+              placeholder="Mot de passe"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
+
+          <button className="btn btnPrimary">Créer le compte</button>
+        </form>
+      </div>
     </div>
   );
 }
