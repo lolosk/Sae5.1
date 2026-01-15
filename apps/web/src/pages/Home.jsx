@@ -99,7 +99,7 @@ export default function Home({ me }) {
     photos: [],
     videoTree: null,
     photoTree: null,
-    lastScan: null
+    lastScan: null,
   });
 
   const [tab, setTab] = useState("videos");
@@ -107,34 +107,32 @@ export default function Home({ me }) {
   const [videoDir, setVideoDir] = useState("");
   const [photoDir, setPhotoDir] = useState("");
 
-  //pdf
-  const [pdfIndex, setPdfIndex] = useState(-1);
-
-  function isPdf(file) {
-    return (file.kind === "pdf") || (file.ext === ".pdf") || (file.name || "").toLowerCase().endsWith(".pdf") || (file.path || "").toLowerCase().endsWith(".pdf");
-  }
-
-
-
   const [expandedVideos, setExpandedVideos] = useState(new Set([""]));
   const [expandedPhotos, setExpandedPhotos] = useState(new Set([""]));
 
   const [selectedVideo, setSelectedVideo] = useState(null);
 
   const [photoIndex, setPhotoIndex] = useState(-1);
+  const [pdfIndex, setPdfIndex] = useState(-1);
 
-  // tri
   const [photoSort, setPhotoSort] = useState("newest");
   const [videoSort, setVideoSort] = useState("newest");
 
-  // recherche
   const [photoQuery, setPhotoQuery] = useState("");
   const [videoQuery, setVideoQuery] = useState("");
 
-  // NEW: vue vidéos (grid/list)
   const [videoView, setVideoView] = useState("grid"); // "grid" | "list"
 
   const [msg, setMsg] = useState("");
+
+  function isPdf(file) {
+    return (
+      file?.kind === "pdf" ||
+      file?.ext === ".pdf" ||
+      String(file?.name || "").toLowerCase().endsWith(".pdf") ||
+      String(file?.path || "").toLowerCase().endsWith(".pdf")
+    );
+  }
 
   async function loadLibrary() {
     setMsg("");
@@ -167,29 +165,18 @@ export default function Home({ me }) {
   const sortedPhotoFiles = useMemo(() => sortFileNodes(rawPhotoFiles, photoSort), [rawPhotoFiles, photoSort]);
   const photoFiles = useMemo(() => filterByQuery(sortedPhotoFiles, photoQuery), [sortedPhotoFiles, photoQuery]);
 
+  const imageFiles = useMemo(() => photoFiles.filter((f) => !isPdf(f)), [photoFiles]);
+  const pdfFiles = useMemo(() => photoFiles.filter((f) => isPdf(f)), [photoFiles]);
 
-
-  const imageFiles = useMemo(
-    () => photoFiles.filter((f) => !isPdf(f)),
-    [photoFiles]
-  );
-  const pdfFiles = useMemo(
-    () => photoFiles.filter((f) => isPdf(f)),
-    [photoFiles]
-  );
-
-
-  // si on change de dossier photos, on ferme la modale
+  // si on change de dossier/tri photos, on ferme les modales
   useEffect(() => {
     setPhotoIndex(-1);
+    setPdfIndex(-1);
   }, [photoDir, photoSort]);
 
   useEffect(() => {
     setSelectedVideo(null);
   }, [videoDir]);
-    setPdfIndex(-1);
-  }, [photoDir]);
-
 
   if (!me) {
     return (
@@ -210,7 +197,9 @@ export default function Home({ me }) {
       <div className="pageHeader">
         <div>
           <h1>Accueil</h1>
-          <div className="pageMeta">Dernier scan : {lib.lastScan ? new Date(lib.lastScan).toLocaleString() : "—"}</div>
+          <div className="pageMeta">
+            Dernier scan : {lib.lastScan ? new Date(lib.lastScan).toLocaleString() : "—"}
+          </div>
         </div>
 
         <div className="pageHeaderRight">
@@ -455,61 +444,28 @@ export default function Home({ me }) {
                   <span className="searchIcon">🔎</span>
                   <input
                     className="searchInput"
-                    placeholder="Rechercher une photo…"
+                    placeholder="Rechercher une photo ou un PDF…"
                     value={photoQuery}
                     onChange={(e) => setPhotoQuery(e.target.value)}
                   />
                 </div>
 
-              {photoFiles.map((p, idx) => (
-                <div
-                  key={p.path}
-                  style={{ border: "1px solid #eee", borderRadius: 8, overflow: "hidden", cursor: "pointer" }}
-                  onClick={() => {
-                    if (isPdf(p)) {
-                      const i = pdfFiles.findIndex((x) => x.path === p.path);
-                      setPdfIndex(i);
-                    } else {
-                      const i = imageFiles.findIndex((x) => x.path === p.path);
-                      setPhotoIndex(i);
-                    }
-                  }}
-                  title="Clique pour ouvrir"
-
-                >
-                  {isPdf(p) ? (
-                    <div style={{ height: 160, display: "flex", alignItems: "center", justifyContent: "center", background: "#f3f4f6", fontWeight: 800 }}>
-                      PDF
-                    </div>
-                  ) : (
-                    <img
-                      alt={p.name}
-                      style={{ width: "100%", height: 160, objectFit: "cover", display: "block" }}
-                      src={`/image?path=${encodeURIComponent(p.path)}`}
-                      loading="lazy"
-                    />
-                  )}
-
-
-                  <div style={{ fontSize: 12, padding: 6, color: "#555" }}>{p.name}</div>
+                <div className="toolbarRight">
+                  <select className="select" value={photoSort} onChange={(e) => setPhotoSort(e.target.value)}>
+                    <option value="newest">Date : plus récent</option>
+                    <option value="oldest">Date : plus ancien</option>
+                    <option value="name_asc">Nom : A → Z</option>
+                    <option value="name_desc">Nom : Z → A</option>
+                    <option value="size_desc">Taille : grande → petite</option>
+                    <option value="size_asc">Taille : petite → grande</option>
+                  </select>
                 </div>
-              ))}
-
-            </div>
-                <select className="select" value={photoSort} onChange={(e) => setPhotoSort(e.target.value)}>
-                  <option value="newest">Date : plus récent</option>
-                  <option value="oldest">Date : plus ancien</option>
-                  <option value="name_asc">Nom : A → Z</option>
-                  <option value="name_desc">Nom : Z → A</option>
-                  <option value="size_desc">Taille : grande → petite</option>
-                  <option value="size_asc">Taille : petite → grande</option>
-                </select>
               </div>
 
               {photoFiles.length === 0 ? (
                 <div className="empty">
                   <div>
-                    <div style={{ fontWeight: 950, fontSize: 16 }}>Aucune photo</div>
+                    <div style={{ fontWeight: 950, fontSize: 16 }}>Aucun fichier</div>
                     <div className="muted" style={{ marginTop: 6 }}>
                       Change de dossier ou clique “Rescan”.
                     </div>
@@ -517,17 +473,48 @@ export default function Home({ me }) {
                 </div>
               ) : (
                 <div className="thumbGrid">
-                  {photoFiles.map((p, idx) => (
-                    <div key={p.path} className="thumbCard" onClick={() => setPhotoIndex(idx)} title="Clique pour agrandir">
-                      <img
-                        alt={p.name}
-                        className="thumbImg"
-                        src={`/image?path=${encodeURIComponent(p.path)}`}
-                        loading="lazy"
-                      />
+                  {photoFiles.map((p) => (
+                    <div
+                      key={p.path}
+                      className="thumbCard"
+                      onClick={() => {
+                        if (isPdf(p)) {
+                          const i = pdfFiles.findIndex((x) => x.path === p.path);
+                          setPdfIndex(i);
+                        } else {
+                          const i = imageFiles.findIndex((x) => x.path === p.path);
+                          setPhotoIndex(i);
+                        }
+                      }}
+                      title="Clique pour ouvrir"
+                    >
+                      {isPdf(p) ? (
+                        <div
+                          className="thumbImg"
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            background: "#f3f4f6",
+                            fontWeight: 800,
+                          }}
+                        >
+                          PDF
+                        </div>
+                      ) : (
+                        <img
+                          alt={p.name}
+                          className="thumbImg"
+                          src={`/image?path=${encodeURIComponent(p.path)}`}
+                          loading="lazy"
+                        />
+                      )}
+
                       <div className="thumbName">
                         <div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
-                          <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.name}</span>
+                          <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                            {p.name}
+                          </span>
                           <span className="muted" style={{ fontSize: 12 }}>
                             {bytesToHuman(p.meta?.size)}
                           </span>
@@ -540,7 +527,9 @@ export default function Home({ me }) {
                   ))}
                 </div>
               )}
+            </div>
 
+            {/* Modales */}
             {photoIndex >= 0 && (
               <PhotoModal
                 files={imageFiles}
@@ -551,23 +540,7 @@ export default function Home({ me }) {
               />
             )}
 
-
-            {pdfIndex >= 0 && (
-              <PdfModal file={pdfFiles[pdfIndex]} onClose={() => setPdfIndex(-1)} />
-            )}
-
-
-          </div>
-              {photoIndex >= 0 && (
-                <PhotoModal
-                  files={photoFiles}
-                  index={photoIndex}
-                  onClose={() => setPhotoIndex(-1)}
-                  onPrev={() => setPhotoIndex((i) => (i > 0 ? i - 1 : i))}
-                  onNext={() => setPhotoIndex((i) => (i < photoFiles.length - 1 ? i + 1 : i))}
-                />
-              )}
-            </div>
+            {pdfIndex >= 0 && <PdfModal file={pdfFiles[pdfIndex]} onClose={() => setPdfIndex(-1)} />}
           </section>
         </div>
       )}
@@ -641,7 +614,7 @@ function PdfModal({ file, onClose }) {
         alignItems: "center",
         justifyContent: "center",
         padding: 20,
-        zIndex: 9999
+        zIndex: 9999,
       }}
     >
       <div
@@ -653,7 +626,7 @@ function PdfModal({ file, onClose }) {
           maxHeight: "92vh",
           width: "min(1100px, 96vw)",
           overflow: "hidden",
-          border: "1px solid rgba(255,255,255,0.12)"
+          border: "1px solid rgba(255,255,255,0.12)",
         }}
       >
         <div
@@ -664,7 +637,7 @@ function PdfModal({ file, onClose }) {
             gap: 10,
             padding: "10px 12px",
             color: "white",
-            background: "rgba(0,0,0,0.35)"
+            background: "rgba(0,0,0,0.35)",
           }}
         >
           <div
@@ -673,7 +646,7 @@ function PdfModal({ file, onClose }) {
               opacity: 0.9,
               overflow: "hidden",
               textOverflow: "ellipsis",
-              whiteSpace: "nowrap"
+              whiteSpace: "nowrap",
             }}
             title={file.path}
           >
@@ -694,4 +667,3 @@ function PdfModal({ file, onClose }) {
     </div>
   );
 }
-
