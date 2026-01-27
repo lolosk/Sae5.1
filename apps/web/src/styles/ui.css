@@ -1,5 +1,5 @@
 /* ===========================
-   MediaDock UI (clean + colorful light)
+   MediaDock UI (v1.6)
    File: web/src/styles/ui.css
    =========================== */
 
@@ -8,7 +8,7 @@
   --text: #0f172a;
 }
 
-/* --- Base --- */
+/* --- Basse --- */
 *{ box-sizing: border-box; }
 
 html, body{
@@ -107,7 +107,7 @@ body{
   border: 1px solid rgba(15,23,42,0.08);
 }
 
-/* --- Page header --- */
+/* --- Page Header --- */
 .pageHeader{
   display: flex;
   align-items: flex-end;
@@ -169,7 +169,7 @@ body{
   box-shadow: 0 12px 22px rgba(15,23,42,0.08);
 }
 
-/* --- Buttons (no jump) --- */
+/* --- Buttons (no jump anime) --- */
 .btn{
   border: 1px solid rgba(15,23,42,0.12);
   background: rgba(255,255,255,0.90);
@@ -212,7 +212,7 @@ body{
   outline-offset: 2px;
 }
 
-/* --- Cards (no jump) --- */
+/* --- Cards (no jump anim) --- */
 .card{
   background: rgba(255,255,255,0.78);
   border: 1px solid rgba(15,23,42,0.10);
@@ -281,7 +281,7 @@ body{
   text-align:center;
 }
 
-/* --- Lists (no jump) --- */
+/* --- Lists (no jump anime) --- */
 .list{
   display:flex;
   flex-direction:column;
@@ -787,4 +787,124 @@ label{
 
 .select{
   min-width: 240px !important;     /* évite que le select casse le layout */
+}
+
+
+/* ===========================
+   Mobile / iPhone fixes
+   (problème de scroll à fix!)
+   =========================== */
+
+body { overflow-x: hidden; }
+
+/* Safe areas (iPhone notch + home bar) */
+.topbar { padding-top: env(safe-area-inset-top); }
+.container { padding-bottom: calc(28px + env(safe-area-inset-bottom)); }
+
+/* iOS: vh plus fiable avec svh (fallback vh -> svh) */
+.modalImg{
+  max-height: 78vh;
+  max-height: 78svh;
+}
+.modal{
+  max-height: 92vh;
+  max-height: 92svh;
+}
+
+/* <= 640px : iPhone / petits écrans */
+@media (max-width: 640px){
+
+  .container{ padding: 14px 12px 22px; }
+
+  /* Topbar : wrap + nav scrollable si besoin */
+  .topbarInner{
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .nav{
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 2px;
+  }
+  .navLink{
+    white-space: nowrap;
+  }
+
+  /* Header : tout en colonne, boutons pleine largeur */
+  .pageHeader{
+    align-items: flex-start;
+  }
+  .pageHeader h1{
+    font-size: 24px;
+  }
+  .pageHeaderRight{
+    width: 100%;
+    justify-content: space-between;
+  }
+  .segmented{
+    width: 100%;
+    justify-content: space-between;
+  }
+  .segBtn{
+    flex: 1;
+    text-align: center;
+  }
+
+  /* IMPORTANT : stop les hauteurs fixes sur mobile */
+  .cardFull{
+    height: auto;
+  }
+  .cardFull .cardBody{
+    overflow: visible;
+  }
+
+  /* Toolbars : passent en colonne (plus de débordement) */
+  .toolbar{
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .search{
+    min-width: 0 !important;
+    flex: 1 1 auto !important;
+  }
+  .toolbarRight{
+    width: 100%;
+    margin-left: 0 !important;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* OVERRIDE: ton min-width 240px !important */
+  .select{
+    min-width: 0 !important;
+    width: 100%;
+  }
+
+  /* Grilles plus “mobile friendly” */
+  .thumbGrid{
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+  }
+  .thumbImg{
+    height: 140px;
+  }
+  .videoGrid{
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+  }
+
+  /* Lecteur vidéo moins haut */
+  .previewMedia{
+    max-height: 42vh;
+    max-height: 42svh;
+  }
+}
+
+/* <= 420px : très petits écrans */
+@media (max-width: 420px){
+  .brand{ font-size: 14px; }
+  .btn{ width: 100%; }
+  .badge{ width: 100%; justify-content: center; }
 }
